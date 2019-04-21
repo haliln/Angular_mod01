@@ -1,34 +1,55 @@
 (function() {
     'use strict';
 
-    angular.module('LunchCheck', [])
-        .controller('LunchCheckController', LunchCheckController);
+    angular.module('ShoppingListCheckOff', [])
+        .controller('ToBuyController', ToBuyController)
+        .controller('AlreadyBoughtController', AlreadyBoughtController)
+        .service('ShoppingListCheckOffService', ShoppingListCheckOffService);
 
-    LunchCheckController.$inject = ['$scope'];
+    ToBuyController.$inject = ['ShoppingListCheckOffService'];
 
-    function LunchCheckController($scope) {
-        $scope.manot = '';
-        $scope.message = '';
-        $scope.messageOK = false;
+    function ToBuyController(ShoppingListCheckOffService) {
+        var toBuyList = this;
 
-        $scope.checkLunch = function() {
-            if ($scope.manot.trim().length === 0) {
-                $scope.message = 'Please enter data first';
-                $scope.messageOK = false;
-            } else {
-                var arrayManots = $scope.manot.split(',');
-                var arrayNonEmptyManots = arrayManots.filter(function(v) {
-                    return v.trim() !== '';
-                });
-                $scope.messageOK = true;
-                if (arrayNonEmptyManots.length <= 3) {
-                    $scope.message = 'Enjoy!';
-                    $scope.messageOK = true;
-                } else {
-                    $scope.message = 'Too much!';
-                    $scope.messageOK = false;
-                }
-            }
+        toBuyList.items = ShoppingListCheckOffService.getToBuyItems();
+
+        toBuyList.buyItem = function(itemIndex) {
+            ShoppingListCheckOffService.buyItem(itemIndex);
+        };
+    }
+
+    AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
+
+    function AlreadyBoughtController(ShoppingListCheckOffService) {
+        var alreadyBougthList = this;
+        alreadyBougthList.items = ShoppingListCheckOffService.getAlreadyBoughtItems();
+    }
+
+    function ShoppingListCheckOffService() {
+        var service = this;
+        //Initialize the two arrays
+        var toBuyItems = [
+            { name: "melons", quantity: 10 },
+            { name: "cokies", quantity: 2 },
+            { name: "beers", quantity: 6 },
+            { name: "oranges", quantity: 4 },
+            { name: "apples", quantity: 7 }
+        ];
+        var alreadyBoughtItems = [];
+
+        service.buyItem = function(itemIndex) {
+            var item = toBuyItems[itemIndex];
+            //push the bought item to the alreadyBought and remove it from the toBuyItems
+            alreadyBoughtItems.push(item);
+            toBuyItems.splice(itemIndex, 1);
+        };
+
+        service.getToBuyItems = function() {
+            return toBuyItems;
+        };
+
+        service.getAlreadyBoughtItems = function() {
+            return alreadyBoughtItems;
         };
     }
 })();
